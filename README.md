@@ -24,7 +24,7 @@ Custom SQL
     conn.connect("localhost", 3306, "test", "root", "123456");
     TableExporter exporter = new TableExporter(conn);
     Output out = new CsvOutput("~/output.csv");
-    exporter.sql("SELECT * FROM my_table WHERE email LIKE '%@gmail.com'").export(out);
+    exporter.sql("SELECT name, email FROM my_table WHERE email LIKE '%@gmail.com'").export(out);
     conn.close();
 ```
 
