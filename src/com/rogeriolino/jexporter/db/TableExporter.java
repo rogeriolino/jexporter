@@ -23,7 +23,6 @@ public class TableExporter implements Exporter {
     private boolean showHeader = true;
     private final JdbcConnection conn;
     private Hydrator hydrator;
-    private long rows;
     
     public TableExporter(JdbcConnection conn) {
         this.conn = conn;
@@ -41,10 +40,6 @@ public class TableExporter implements Exporter {
     public String sql() {
         return sql;
     }
-    
-    public long rows() {
-        return rows;
-    }
 
     public TableExporter sql(String sql) {
         this.sql = sql;
@@ -59,34 +54,27 @@ public class TableExporter implements Exporter {
         this.hydrator = hydrator;
     }
     
-    public TableExporter exportAll(String tableName, Output out) {
-        return sql("SELECT * FROM " + tableName).export(out);
+    public void exportAll(String tableName, Output out) {
+        sql("SELECT * FROM " + tableName).export(out);
     }
     
     @Override
-    public TableExporter export(Output out) {
+    public void export(Output out) {
         try {
-            rows = 0;
             PreparedStatement stmt = conn.getConnection().prepareStatement(sql);
             stmt.execute();
             ResultSet rs = stmt.getResultSet();
+            out.begin();
+            if (showHeader) {
+                out.header(rs.getMetaData(), hydrator);
+            }
             while (rs.next()) {
-                if (rows == 0) {
-                    out.begin();
-                    if (showHeader) {
-                        out.header(rs.getMetaData(), hydrator);
-                    }
-                }
                 out.row(rs, hydrator);
-                rows++;
             }
-            if (rows > 0) {
-                out.end();
-            }
+            out.end();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return this;
     }
     
     public void flush() {
