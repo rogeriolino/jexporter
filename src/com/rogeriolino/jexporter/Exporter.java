@@ -8,6 +8,6 @@ import com.rogeriolino.jexporter.db.out.Output;
  */
 public interface Exporter {
     
-    public void export(Output out);
+    public <T extends Exporter>T export(Output out);
     
 }
